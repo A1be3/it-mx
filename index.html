@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación Técnica IT Onsite</title>
+<style>
+  /* ========================================== */
+  /* CSS ANTI-TRAMPAS Y VARIABLES BASE          */
+  /* ========================================== */
+  :root { 
+    --q-gap: 1.5rem; 
+    --color-text-primary: #2C3E50;
+    --color-text-secondary: #5D6D7E;
+    --color-border-secondary: #E5E8E8;
+    --color-border-tertiary: #D5D8DC;
+    --color-border-info: #3498DB;
+    --color-background-primary: #FFFFFF;
+    --color-background-secondary: #F2F4F4;
+    --color-background-info: #EAF2F8;
+    --color-text-info: #2874A6;
+    --color-background-warning: #FEF9E7;
+    --color-text-warning: #B7950B;
+    --border-radius-md: 6px;
+    --border-radius-lg: 10px;
+  }
+
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #FAFAFA;
+    margin: 0;
+    padding: 20px;
+    /* Bloqueo de selección de texto */
+    -webkit-user-select: none; 
+    -ms-user-select: none; 
+    user-select: none; 
+  }
+
+  input[type="text"] {
+    -webkit-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+  }
+
+  /* ========================================== */
+  /* ESTILOS DEL EXAMEN                         */
+  /* ========================================== */
+  .exam-wrap { max-width: 800px; margin: 0 auto; padding: 1rem 0; font-size: 15px; color: var(--color-text-primary); }
+  .block-header { display: flex; align-items: center; gap: 10px; margin: 2rem 0 1rem; padding-bottom: 8px; border-bottom: 1.5px solid var(--color-border-secondary); }
+  .block-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--border-radius-md); background: var(--color-background-info); color: var(--color-text-info); text-transform: uppercase; letter-spacing: 0.5px; }
+  .block-title { font-size: 18px; font-weight: 600; }
+  .q-card { background: var(--color-background-primary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .q-card.new { border-left: 4px solid #378ADD; }
+  .q-num { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+  .new-tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--border-radius-md); background: #E6F1FB; color: #185FA5; }
+  .q-text { font-size: 16px; font-weight: 500; line-height: 1.5; margin-bottom: 15px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border-tertiary); cursor: pointer; transition: all 0.2s; font-size: 14.5px; line-height: 1.4; }
+  .option:hover { background: var(--color-background-secondary); border-color: #BFC9CA; }
+  .option.correct { background: #EAF3DE; border-color: #639922; color: #27500A; cursor: default; }
+  .option.wrong { background: #FCEBEB; border-color: #A32D2D; color: #501313; cursor: default; }
+  .option-letter { font-weight: 600; min-width: 20px; color: var(--color-text-secondary); }
+  .answer-box { margin-top: 12px; display: none; padding: 12px; border-radius: var(--border-radius-md); background: var(--color-background-info); font-size: 14px; line-height: 1.5; color: var(--color-text-primary); border-left: 4px solid var(--color-border-info); }
+  .answer-box.show { display: block; }
+  .justif { font-style: italic; }
+  .toggle-btn { font-family: inherit; font-weight: 600; font-size: 14px; padding: 8px 16px; cursor: pointer; border: none; border-radius: var(--border-radius-md); transition: opacity 0.2s; }
+  .toggle-btn:hover { opacity: 0.9; }
+  .open-hint { margin-top: 10px; font-size: 14px; color: var(--color-text-primary); background: var(--color-background-warning); border-left: 4px solid var(--color-text-warning); padding: 12px; border-radius: var(--border-radius-md); display: none; }
+  .open-hint.show { display: block; }
+  .stats-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.5rem; background: var(--color-background-primary); padding: 15px; border-radius: var(--border-radius-lg); border: 1px solid var(--color-border-tertiary); }
+  .stat { background: var(--color-background-secondary); padding: 10px 15px; border-radius: var(--border-radius-md); font-size: 12px; color: var(--color-text-secondary); }
+  .stat span { font-weight: 700; font-size: 18px; display: block; color: var(--color-text-primary); margin-bottom: 2px; }
+  .legend { display: flex; gap: 15px; font-size: 13px; color: var(--color-text-secondary); margin-bottom: 2rem; flex-wrap: wrap; padding: 0 5px; }
+  .leg-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="exam-wrap" style="text-align: center; margin-top: 10vh;">
+  <h1 style="color: var(--color-text-primary);">Evaluación Técnica IT Onsite</h1>
+  <p style="color: var(--color-text-secondary); margin-bottom: 30px;">Ingresa tu nombre completo para comenzar la evaluación. <br><small><i>Atención: El examen cuenta con un sistema de monitoreo de actividad.</i></small></p>
+  <input type="text" id="candidate-name" placeholder="Ej. Juan Pérez" style="padding: 12px 15px; font-size: 16px; width: 100%; max-width: 350px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ccc; outline: none;">
+  <br>
+  <button onclick="startExam()" class="toggle-btn" style="background: #378ADD; color: white; padding: 12px 30px; font-size: 16px;">Comenzar Examen</button>
+</div>
+
+<div id="main-exam-container" style="display: none;">
+  <div class="exam-wrap" id="exam">
+    <div class="stats-bar">
+      <div class="stat"><span>28</span>preguntas totales</div>
+      <div class="stat"><span>5</span>bloques temáticos</div>
+      <div class="stat"><span>8</span>preguntas nuevas</div>
+      <div class="stat"><span id="score-display">0 / 0</span>respondidas</div>
+    </div>
+    <div class="legend">
+      <span><span class="leg-dot" style="background:#378ADD"></span>Pregunta nueva</span>
+      <span><span class="leg-dot" style="background:#639922"></span>Respuesta correcta</span>
+      <span><span class="leg-dot" style="background:#A32D2D"></span>Respuesta incorrecta</span>
+    </div>
+    </div>
+</div>
+
+<div id="finish-screen" class="exam-wrap" style="display:none; text-align: center; margin-top: 10vh; background: white; padding: 40px; border-radius: 10px; border: 1px solid var(--color-border-tertiary);">
+  <h2 style="color: var(--color-text-primary); margin-bottom: 10px;">¡Evaluación finalizada!</h2>
+  <p style="color: var(--color-text-secondary); margin-bottom: 30px;">Has respondido todas las preguntas requeridas.</p>
+  <button id="btn-send" onclick="sendToGoogle()" class="toggle-btn" style="background: #639922; color: white; padding: 12px 30px; font-size: 16px;">Enviar resultados al evaluador</button>
+  <p id="status-msg" style="margin-top: 20px; font-weight: 600;"></p>
+</div>
+
+<script>
+// ==========================================
+// CONFIGURACIÓN Y VARIABLES GLOBALES
+// ==========================================
+const SCRIPT_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; // REEMPLAZA ESTO
+let candidateName = "";
+let answered = 0;
+let total = 0;
+
+// ==========================================
+// BASE DE DATOS DE PREGUNTAS
+// ==========================================
+const blocks = [
+  {
+    title: "Networking y conectividad",
+    questions: [
+      {
+        num: 1,
+        open: true,
+        text: "Escenario de diagnóstico: Un usuario en una sala de juntas reporta que el Access Point no da internet, aunque los LEDs parecen normales. Describe tu ruta de diagnóstico desde la capa física hasta la lógica.",
+        answer: "Criterios esperados — Capa física: verificar estado del cable UTP, PoE activo en el switch y sin daños físicos en el AP. Capa de enlace: confirmar que el puerto del switch esté activo, en la VLAN correcta y con la velocidad negociada. Capa red/lógica: verificar que el AP obtuvo dirección IP vía DHCP, que el gateway es alcanzable y que la política del firewall permite salida."
+      },
+      {
+        num: 2,
+        text: "Si necesitas conectar dos switches que no soportan Auto-MDIX mediante sus puertos de cobre, ¿qué tipo de cable debes usar?",
+        opts: ["Cable directo (Straight-through) bajo norma T568B en ambos lados.", "Cable cruzado (Crossover) con T568A en un extremo y T568B en el otro.", "Cable de consola (Rollover).", "No es posible conectarlos por cobre, debe ser fibra."],
+        correct: 1,
+        just: "Para conectar equipos del mismo tipo (switch-switch, PC-PC) sin Auto-MDIX se requiere un cable cruzado que invierta los pares TX y RX."
+      },
+      {
+        num: 3,
+        text: "Un switch tiene un puerto configurado en VLAN 10 en modo Acceso. Conectas un teléfono IP que requiere VLAN 20 para voz. ¿Qué sucede?",
+        opts: ["El teléfono funcionará normalmente si el DHCP es el mismo.", "El teléfono no tendrá conectividad de voz porque el puerto no está en modo Trunk o no tiene configurada la Voice VLAN.", "El switch cambiará automáticamente el puerto a la VLAN 20.", "El teléfono quemará el puerto del switch por diferencia de voltaje."],
+        correct: 1,
+        just: "Los teléfonos IP requieren que el puerto esté en modo Trunk o que tenga una Voice VLAN configurada explícitamente."
+      },
+      {
+        num: 4,
+        text: "¿Cuál es la función principal de un Firewall de Siguiente Generación (NGFW) en la red local?",
+        opts: ["Aumentar la velocidad del ancho de banda contratado.", "Inspeccionar paquetes a nivel de aplicación (Capa 7) y filtrar tráfico según políticas de seguridad.", "Actuar como el único servidor DHCP de la oficina.", "Reemplazar la necesidad de switches en la red core."],
+        correct: 1,
+        just: "El NGFW inspecciona la carga útil del paquete para identificar aplicaciones, usuarios y amenazas, permitiendo políticas granulares."
+      },
+      {
+        num: 5,
+        text: "Te piden instalar un AP en un almacén donde el cableado medirá 130 metros desde el switch. ¿Qué acción es la correcta?",
+        opts: ["Instalarlo; el estándar Ethernet soporta hasta 150 metros.", "Usar un switch intermedio, ya que el límite del cableado UTP Cat6/6A es de 100 metros.", "Utilizar cable categoría 5e para asegurar que la señal llegue más lejos.", "Cambiar el switch por uno de mayor voltaje PoE."],
+        correct: 1,
+        just: "El estándar IEEE 802.3 limita el cableado horizontal de cobre a 100 m. Para mayor distancia se coloca un switch intermedio o fibra."
+      },
+      {
+        num: 6,
+        isNew: true,
+        text: "Un usuario reporta latencia muy alta solo en videollamadas, pero la navegación web es fluida. ¿Cuál es la causa más probable?",
+        opts: ["El servidor DNS está caído.", "Falta de QoS configurado: el tráfico de voz/video no tiene prioridad sobre el tráfico de datos en la red.", "El cable de red del usuario está mal ponchado.", "El firewall está bloqueando el puerto 443."],
+        correct: 1,
+        just: "La latencia selectiva en tráfico multimedia apunta a ausencia de QoS (Quality of Service)."
+      }
+    ]
+  },
+  {
+    title: "Cableado estructurado y hardware",
+    questions: [
+      {
+        num: 7,
+        text: "¿Qué norma de colores se utiliza mayoritariamente en México para el ponchado de racks y nodos de red?",
+        opts: ["TIA/EIA-568A", "TIA/EIA-568B", "IEEE 802.3", "ISO 9001"],
+        correct: 1,
+        just: "La norma T568B es el estándar de facto en América del Norte, incluyendo México."
+      },
+      {
+        num: 8,
+        text: "¿Para qué sirve el cable blindado (STP o FTP) en una instalación de oficina?",
+        opts: ["Para que el cable sea más flexible y fácil de peinar.", "Para proteger la integridad de los datos contra interferencia electromagnética (EMI).", "Para permitir que el cable pase por tuberías de agua.", "Solo se usa para conexiones de fibra óptica."],
+        correct: 1,
+        just: "El blindaje absorbe y disipa la interferencia electromagnética (EMI)."
+      },
+      {
+        num: 9,
+        text: "Una computadora reporta 'Cable de red desconectado' de forma intermitente. ¿Cuál es la primera prueba física que realizarías?",
+        opts: ["Reiniciar el servidor de dominio.", "Probar con un patch cord certificado y revisar el estado de los pines en la roseta/jack.", "Reinstalar el sistema operativo Windows.", "Cambiar la dirección IP de estática a dinámica."],
+        correct: 1,
+        just: "Siempre se inicia por la capa física. Un patch cord defectuoso es la causa más frecuente."
+      },
+      {
+        num: 10,
+        text: "¿Qué herramienta utilizarías para identificar a qué puerto de un patch panel llega un nodo sin etiquetar?",
+        opts: ["Un multímetro.", "Un generador de tonos (pollito/inductor) y una sonda.", "Un desarmador de precisión.", "Software de antivirus."],
+        correct: 1,
+        just: "El generador de tonos inyecta una señal audible que la sonda detecta en el patch panel."
+      },
+      {
+        num: 11,
+        text: "¿Cuál es la función de un Patch Panel en un rack de comunicaciones?",
+        opts: ["Energizar los equipos de red.", "Organizar y terminar de forma fija el cableado horizontal para facilitar la administración.", "Actuar como un router de respaldo.", "Almacenar logs de navegación de los usuarios."],
+        correct: 1,
+        just: "Permite reconectar puertos del switch con facilidad mediante patch cords sin tocar el cableado permanente de la pared."
+      },
+      {
+        num: 12,
+        isNew: true,
+        text: "Al realizar una certificación de cableado Cat6, la prueba de 'NEXT' (Near-End Crosstalk) falla en un nodo. ¿Cuál es la causa más común?",
+        opts: ["El switch no soporta Gigabit Ethernet.", "Exceso de desdoblamiento del par trenzado al momento del ponchado en el jack o el plug.", "El cable es demasiado corto para realizar la prueba.", "El servidor DHCP no asignó dirección IP."],
+        correct: 1,
+        just: "Desdoblar el trenzado en la terminación destruye la cancelación de ruido y eleva el crosstalk (NEXT)."
+      }
+    ]
+  },
+  {
+    title: "Infraestructura: servidores, UPS y NAS",
+    questions: [
+      {
+        num: 13,
+        text: "Un servidor con RAID 5 pierde un disco duro. ¿Qué sucede con los datos?",
+        opts: ["Se pierden todos los datos inmediatamente.", "El servidor sigue operando con datos íntegros en modo degradado; es crítico reemplazar el disco antes de que falle otro.", "El servidor se apaga y no enciende hasta instalar un disco nuevo.", "Los datos se mueven automáticamente a la nube."],
+        correct: 1,
+        just: "RAID 5 usa paridad distribuida y tolera la falla de un disco. Opera en modo degradado hasta que se reemplace."
+      },
+      {
+        num: 14,
+        text: "¿Cuál es la principal ventaja de un UPS Online de Doble Conversión para un cuarto de servidores?",
+        opts: ["Es más barato y consume menos energía.", "Ofrece tiempo de transferencia cero milisegundos, aislando los equipos de cualquier anomalía eléctrica.", "Solo sirve para cargar laptops.", "Permite que el servidor funcione sin internet."],
+        correct: 1,
+        just: "No hay tiempo de conmutación porque la energía de la red solo recarga la batería, el inversor alimenta siempre la carga."
+      },
+      {
+        num: 15,
+        text: "El NAS de la oficina reporta que se ha quedado sin espacio. ¿Cuál es la solución técnica más profesional?",
+        opts: ["Borrar las carpetas de los usuarios sin avisar.", "Analizar cuotas de disco, eliminar archivos duplicados/obsoletos y evaluar la expansión del arreglo con discos de mayor capacidad.", "Comprar memorias USB para todos los empleados.", "Apagar el NAS para que no se sature más."],
+        correct: 1,
+        just: "La gestión profesional implica auditar el uso, habilitar cuotas de disco y evaluar expansión."
+      },
+      {
+        num: 16,
+        text: "¿Qué protocolo es el más común para que un servidor o NAS envíe alertas automáticas de fallas de hardware al técnico?",
+        opts: ["HTTP", "FTP", "SNMP", "DHCP"],
+        correct: 2,
+        just: "SNMP (Simple Network Management Protocol) permite el envío de alertas (traps) a sistemas de monitoreo."
+      },
+      {
+        num: 17,
+        text: "¿Qué componente de un servidor permite la gestión remota (encendido, apagado, consola KVM) incluso si el SO está caído?",
+        opts: ["El BIOS.", "La tarjeta de gestión fuera de banda (iDRAC, iLO o IPMI).", "La tarjeta de sonido.", "El Active Directory."],
+        correct: 1,
+        just: "iDRAC, iLO e IPMI son controladores dedicados con acceso independiente al sistema principal."
+      },
+      {
+        num: 18,
+        isNew: true,
+        text: "Tienes un servidor con 4 discos en RAID 10 (1+0). ¿Cuántos discos pueden fallar simultáneamente en el peor caso sin perder datos?",
+        opts: ["Solo 1 disco en total.", "1 disco por cada par espejo, siempre que no sean los dos de la misma pareja.", "Los 4 discos pueden fallar simultáneamente.", "Ninguno; RAID 10 no tolera fallos."],
+        correct: 1,
+        just: "RAID 10 tolera la falla de hasta n/2 discos siempre que no fallen los dos miembros del mismo par espejo."
+      }
+    ]
+  },
+  {
+    title: "Soporte, seguridad y gestión",
+    questions: [
+      {
+        num: 19,
+        text: "Un módem ISP en modo Bridge está instalado. ¿Quién gestiona el marcado PPPoE y la IP pública?",
+        opts: ["El switch de distribución.", "El firewall o router de la empresa.", "La computadora del gerente.", "El módem lo sigue haciendo automáticamente."],
+        correct: 1,
+        just: "En modo Bridge, la responsabilidad del ruteo recae en el equipo perimetral del cliente."
+      },
+      {
+        num: 20,
+        text: "¿Qué ventaja principal ofrece una controladora WLC para la red WiFi corporativa?",
+        opts: ["Hace que el internet sea gratuito.", "Permite gestión centralizada de APs, roaming fluido y administración automática de canales y potencia.", "Evita que se necesiten cables para los APs.", "Solo sirve para cambiar la contraseña del WiFi."],
+        correct: 1,
+        just: "Una WLC centraliza configuraciones, firmware y garantiza el roaming transparente."
+      },
+      {
+        num: 21,
+        text: "¿Qué puerto estándar utiliza HTTPS que un firewall suele dejar abierto hacia internet?",
+        opts: ["80", "21", "443", "3389"],
+        correct: 2,
+        just: "El puerto 443 TCP es el estándar para HTTPS."
+      },
+      {
+        num: 22,
+        text: "¿Para qué se utiliza el comando tracert / traceroute en soporte?",
+        opts: ["Para borrar el historial de navegación.", "Para ver la ruta y los saltos que da un paquete hasta un destino, identificando dónde hay latencia o cortes.", "Para cambiar la contraseña del administrador.", "Para instalar drivers de impresora."],
+        correct: 1,
+        just: "Revela cada router en la ruta, permitiendo localizar cuellos de botella."
+      },
+      {
+        num: 23,
+        isNew: true,
+        text: "Un usuario reporta que su computadora de dominio muestra el error 'No hay ningún servidor de inicio de sesión disponible'. ¿Cuál es el diagnóstico?",
+        opts: ["La contraseña del usuario venció.", "La computadora no tiene conectividad de red con el Controlador de Dominio (DC) o el servicio Netlogon está detenido.", "La computadora necesita actualizaciones de Windows.", "La tarjeta gráfica está fallando."],
+        correct: 1,
+        just: "Indica falla de comunicación con el DC (red o DNS mal configurado)."
+      },
+      {
+        num: 24,
+        isNew: true,
+        text: "¿Cuál es la diferencia práctica entre una VPN SSL (cliente) y una VPN IPSec site-to-site?",
+        opts: ["No hay diferencia.", "La VPN SSL conecta usuarios individuales remotos; la site-to-site enlaza permanentemente dos oficinas/redes.", "La VPN IPSec solo funciona en Windows.", "La VPN site-to-site es solo para cámaras de seguridad."],
+        correct: 1,
+        just: "SSL es para trabajadores remotos; Site-to-Site une sucursales corporativas de forma transparente."
+      },
+      {
+        num: 25,
+        isNew: true,
+        text: "Un técnico necesita acceder a la consola de un router Cisco sin red configurada. ¿Qué cable usa?",
+        opts: ["Cable straight-through al puerto Ethernet.", "Cable de consola (Rollover) al puerto CONSOLE del router.", "Cable cruzado al puerto Gigabit.", "Fibra óptica al puerto SFP."],
+        correct: 1,
+        just: "El acceso fuera de banda físico se realiza vía el puerto de CONSOLA."
+      }
+    ]
+  },
+  {
+    title: "Endpoint, periféricos y usuario final",
+    questions: [
+      {
+        num: 26,
+        text: "¿Qué significa que un switch sea PoE (Power over Ethernet)?",
+        opts: ["Que es un switch muy rápido.", "Que puede alimentar eléctricamente dispositivos (cámaras, APs) a través del cable de red.", "Que solo funciona con energía solar.", "Que no necesita conexión a tierra."],
+        correct: 1,
+        just: "PoE entrega energía a través del cable UTP (estándar 802.3af/at/bt)."
+      },
+      {
+        num: 27,
+        isNew: true,
+        text: "Una impresora de red estática ya no imprime tras un cambio de switch. ¿Cuál es el primer paso?",
+        opts: ["Reinstalar los drivers.", "Hacer ping desde una computadora a la IP de la impresora para verificar si hay conectividad de red.", "Cambiar la impresora.", "Formatear la computadora."],
+        correct: 1,
+        just: "Siempre verificar conectividad de red (Ping) antes de manipular software o drivers."
+      },
+      {
+        num: 28,
+        isNew: true,
+        text: "¿Cuál es la ventaja de usar BitLocker en laptops corporativas?",
+        opts: ["Hace que la laptop arranque más rápido.", "Protege la información cifrando el disco; los datos son ilegibles si roban el equipo.", "Aumenta la capacidad de almacenamiento.", "Permite conectarse a internet sin contraseña WiFi."],
+        correct: 1,
+        just: "Cifrado de disco completo para proteger datos confidenciales ante robo físico."
+      }
+    ]
+  }
+];
+
+// ==========================================
+// LÓGICA DE APLICACIÓN
+// ==========================================
+function countTotal() {
+  blocks.forEach(b => b.questions.forEach(q => { if (!q.open) total++; }));
+}
+
+function startExam() {
+  candidateName = document.getElementById('candidate-name').value.trim();
+  if (!candidateName) return alert("Por favor, ingresa tu nombre completo.");
+  
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-exam-container').style.display = 'block';
+  // Desplazar arriba
+  window.scrollTo(0,0);
+}
+
+function checkCompletion() {
+  document.getElementById('score-display').textContent = answered + ' / ' + total;
+  if (answered === total) {
+    document.getElementById('finish-screen').style.display = 'block';
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+}
+
+async function sendToGoogle() {
+  const btn = document.getElementById('btn-send');
+  const msg = document.getElementById('status-msg');
+  
+  if(SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
+    alert("ADVERTENCIA: No has configurado la URL de Apps Script. Los datos no se guardarán.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  msg.textContent = "Enviando resultados al servidor...";
+  msg.style.color = "var(--color-text-secondary)";
+
+  const payload = {
+    nombre: candidateName,
+    score: answered,
+    total: total
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors', 
+      cache: 'no-cache',
+      body: JSON.stringify(payload)
+    });
+    msg.textContent = "✅ Resultados enviados y guardados correctamente.";
+    msg.style.color = "#27500A";
+    btn.style.display = 'none';
+  } catch (e) {
+    msg.textContent = "❌ Ocurrió un error al enviar la información.";
+    msg.style.color = "#A32D2D";
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+function build() {
+  const wrap = document.getElementById('exam');
+  
+  blocks.forEach(block => {
+    const bh = document.createElement('div');
+    bh.className = 'block-header';
+    bh.innerHTML = `<span class="block-badge">Bloque</span><span class="block-title">${block.title}</span>`;
+    wrap.appendChild(bh);
+
+    block.questions.forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'q-card' + (q.isNew ? ' new' : '');
+      
+      let numHTML = `<div class="q-num">Pregunta ${q.num}${q.isNew ? '<span class="new-tag">Nueva</span>' : ''}`;
+      if (q.open) numHTML += '<span class="new-tag" style="background:var(--color-background-warning);color:var(--color-text-warning)">Respuesta Verbal / Abierta</span>';
+      numHTML += '</div>';
+      
+      card.innerHTML = numHTML + `<div class="q-text">${q.text}</div>`;
+
+      if (q.open) {
+        const hint = document.createElement('div');
+        hint.className = 'open-hint';
+        hint.id = 'hint-' + q.num;
+        hint.innerHTML = '<strong>Criterio de evaluación:</strong> ' + q.answer;
+        card.appendChild(hint);
+        
+        const btn = document.createElement('button');
+        btn.className = 'toggle-btn';
+        btn.style.background = '#eee';
+        btn.style.color = '#333';
+        btn.style.border = '1px solid #ccc';
+        btn.textContent = 'Ver criterios de evaluación (Solo Evaluador)';
+        btn.onclick = () => {
+          hint.classList.toggle('show');
+          btn.textContent = hint.classList.contains('show') ? 'Ocultar criterios' : 'Ver criterios de evaluación (Solo Evaluador)';
+        };
+        card.appendChild(btn);
+      } else {
